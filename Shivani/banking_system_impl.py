@@ -68,3 +68,18 @@ class BankingSystemImpl(BankingSystem):
         items.sort(key=lambda t: (-t[1], t[0]))  # total desc, id asc
         items = items[:n]
         return [f"{aid}({total})" for aid, total in items]
+
+
+test = BankingSystemImpl()
+# Test Level 2
+print(test.create_account(1, "account3"))
+print(test.create_account(2, "account2"))
+print(test.create_account(3, "account1"))
+print(test.deposit(4, "account1", 2000))
+print(test.deposit(5, "account2", 3000))
+print(test.deposit(6, "account3", 4000))
+print(test.top_spenders(7, 3))
+print(test.transfer(8, "account3", "account2", 500))
+print(test.transfer(9, "account3", "account1", 1000))
+print(test.transfer(10, "account1", "account2", 2500))
+print(test.top_spenders(11, 3))
