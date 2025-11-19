@@ -59,6 +59,7 @@ class BankingSystemImpl(BankingSystem):
      def top_spenders(self, timestamp: int, n: int) -> list[str]:
         
         # Build list from existing accounts to ensure brand-new accounts show as 0
+<<<<<<< HEAD
         
         #list of tuples to have acount ID and the total outgoing ammount
         top_accounts = []
@@ -74,3 +75,24 @@ class BankingSystemImpl(BankingSystem):
         top_accounts = top_accounts[:n]
 
         return [f"{acc_id}({total})" for acc_id, total in top_accounts]
+=======
+        items = [(aid, self._outgoing.get(aid, 0)) for aid in self._balances.keys()]
+        items.sort(key=lambda t: (-t[1], t[0]))  # total desc, id asc
+        items = items[:n]
+        return [f"{aid}({total})" for aid, total in items]
+
+
+test = BankingSystemImpl()
+# Test Level 2
+print(test.create_account(1, "account3"))
+print(test.create_account(2, "account2"))
+print(test.create_account(3, "account1"))
+print(test.deposit(4, "account1", 2000))
+print(test.deposit(5, "account2", 3000))
+print(test.deposit(6, "account3", 4000))
+print(test.top_spenders(7, 3))
+print(test.transfer(8, "account3", "account2", 500))
+print(test.transfer(9, "account3", "account1", 1000))
+print(test.transfer(10, "account1", "account2", 2500))
+print(test.top_spenders(11, 3))
+>>>>>>> 3b88e265151f7d18f6686e2bccf62695ef3058b5
