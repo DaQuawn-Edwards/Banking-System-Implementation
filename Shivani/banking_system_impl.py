@@ -1,5 +1,5 @@
 from banking_system import BankingSystem
-from typing import Dict, Optional
+from typing import Dict
 
 class BankingSystemImpl(BankingSystem):
      """
@@ -12,59 +12,65 @@ class BankingSystemImpl(BankingSystem):
       * Balances are stored as non-negative integers.
     """
      def __init__(self) -> None:
-        self._balances: Dict[str, int] = {}
-        self._outgoing: Dict[str, int] = {}
-    # O(1)
+        self._balances: Dict[str, int] = {} #current balance of the account (maps account_id)
+        self._outgoing_total: Dict[str, int] = {} #total amount account has sent out (maps account_id)
+    
+    # time complexity of O(1)
      def create_account(self, timestamp: int, account_id: str) -> bool: 
         if account_id in self._balances:
             return False
         self._balances[account_id] = 0
-        self._outgoing[account_id] = 0
+        self._outgoing_total[account_id] = 0
         return True
 
-    # O(1)
-     def deposit(self, timestamp: int, account_id: str, amount: int) -> Optional[int]: 
-        bal = self._balances.get(account_id)
-        if bal is None:
+    # time complexity of O(1)
+     def deposit(self, timestamp: int, account_id: str, amount: int) -> int | None: 
+        balance = self._balances.get(account_id) #looks up the balance in the account
+        if balance is None: #when account does not exist
             return None
-        # Assuming non-negative amounts per spec/tests
-        bal += amount
-        self._balances[account_id] = bal
-        return bal
+        # Assuming non-negative amounts
+        balance += amount
+        self._balances[account_id] = balance
+        return balance
 
-    # O(1)
-     def transfer(
-        self,
-        timestamp: int,
-        source_account_id: str,
-        target_account_id: str,
-        amount: int,
-    ) -> Optional[int]:
+    # time complexity of O(1)
+     def transfer(self, timestamp: int, source_account_id: str, target_account_id: str, amount: int) -> int | None:
+       #checking if the accounts exisit, and making sure they are not the same account
         if (
             source_account_id not in self._balances
             or target_account_id not in self._balances
             or source_account_id == target_account_id
-        ):
+        ): 
             return None
+        #sournce account does not have sufficient funds, the transfer will not happen
         if self._balances[source_account_id] < amount:
             return None
 
+        #performing the transfer (subtract from source and add to target)
         self._balances[source_account_id] -= amount
         self._balances[target_account_id] += amount
 
-        # Level 2: record outgoing for the source
-        self._outgoing[source_account_id] += amount
+        # added this for Level 2 to help with top_spenders function
+        self._outgoing_total[source_account_id] += amount
+        
         return self._balances[source_account_id]
 
-    # -------- Level 2 --------
+    # Level 2
      def top_spenders(self, timestamp: int, n: int) -> list[str]:
-        """
-        Return top n accounts by total outgoing (desc),
-        tie-broken by account_id (asc). Include accounts with 0 outgoing.
-        Format: ["account_id(total)"].
-        """
+        
         # Build list from existing accounts to ensure brand-new accounts show as 0
-        items = [(aid, self._outgoing.get(aid, 0)) for aid in self._balances.keys()]
-        items.sort(key=lambda t: (-t[1], t[0]))  # total desc, id asc
-        items = items[:n]
-        return [f"{aid}({total})" for aid, total in items]
+        
+        #list of tuples to have acount ID and the total outgoing ammount
+        top_accounts = []
+        for acc_id in self._balances.keys():
+            total_outgoing = self._outgoing_total.get(acc_id, 0) #get 0 if account id is not in outgoing_total
+            tuple_pair = (acc_id, total_outgoing)
+            top_accounts.append(tuple_pair)
+
+        #sorts the higher outgoing total first
+        top_accounts.sort(key=lambda item: (-item[1], item[0]))
+
+        #slices to keep top n entries
+        top_accounts = top_accounts[:n]
+
+        return [f"{acc_id}({total})" for acc_id, total in top_accounts]
