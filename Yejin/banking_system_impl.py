@@ -306,6 +306,11 @@ class BankingSystemImpl(BankingSystem):
         # Move all transactions of account2 into account1
         acc1_info['transactions'].extend(acc2_info['transactions'])
         
+        for tx in acc2_info['transactions']:
+            new_tx = tx.copy()
+            new_tx['merged_at'] = timestamp
+            acc1_info['transactions'].append(new_tx)
+        
         # Remove account2 entirely from the system
         del self.whole_accounts[account_id_2]
         
@@ -341,11 +346,17 @@ class BankingSystemImpl(BankingSystem):
         transactions_before_time = []
         for t in transactions:
             if t['timestamp'] <= time_at:
-                transactions_before_time.append(t)
+                continue
+            
+            merged_at = t.get('merged_at')
+            if merged_at is not None and merged_at > time_at:
+                continue
+            
+            transactions_before_time.append(t)
+            
         transactions_before_time.sort(key=lambda t: t['timestamp'])
         
         balance =  0
-        
         for tx in transactions_before_time:
             op = tx['operation']
             amt = tx['amount']
